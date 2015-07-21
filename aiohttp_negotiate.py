@@ -1,6 +1,7 @@
 import asyncio
 import base64
 from http.client import UNAUTHORIZED
+from urllib.parse import urlparse
 
 import aiohttp
 import gssapi
@@ -15,7 +16,7 @@ class NegotiateMixin(object):
         self.negotiate_service = negotiate_service
         self.negotiate_service_name = negotiate_service_name
         self.negotiate_contexts = {}
-        self.negotiate_preempt = preempt
+        self.negotiate_preempt = negotiate_preempt
         super().__init__(**kwargs)
 
     @property
@@ -40,19 +41,20 @@ class NegotiateMixin(object):
 
     @asyncio.coroutine
     def request(self, method, url, headers=None, **kwargs):
-        host = urlparse(response.url).hostname
+        host = urlparse(url).hostname
         headers = headers or {}
         if self.negotiate_preempt or host in self.negotiate_contexts:
             ctx = self.get_negotiate_context(host)
             headers['Authorization'] = self.get_negotiate_auth_header(ctx, None)
-        resp = super().request(method, url, headers=headers, **kwargs)
+        resp = yield from super().request(method, url, headers=headers, **kwargs)
         challenges = www_authenticate.parse(resp.headers.get('WWW-Authenticate'))
         if resp.status == UNAUTHORIZED and 'Negotiate' in challenges:
+            host = urlparse(resp.url).hostname
             ctx = self.get_negotiate_context(host)
             while not ctx.established:
                 in_token = challenges['Negotiate']
                 headers['Authorization'] = self.get_negotiate_auth_header(ctx, in_token)
-                resp = super().request(method, url, headers=headers, **kwargs)
+                resp = yield from super().request(method, url, headers=headers, **kwargs)
         return resp
 
 class NegotiateClientSession(NegotiateMixin, aiohttp.ClientSession):
