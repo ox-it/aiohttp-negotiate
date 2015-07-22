@@ -52,6 +52,7 @@ class NegotiateMixin(object):
             host = urlparse(resp.url).hostname
             ctx = self.get_negotiate_context(host)
             while not ctx.established:
+                resp.close()
                 in_token = challenges['Negotiate']
                 headers['Authorization'] = self.get_negotiate_auth_header(ctx, in_token)
                 resp = yield from super().request(method, url, headers=headers, **kwargs)
