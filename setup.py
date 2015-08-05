@@ -12,5 +12,5 @@ setup(
     py_modules=['aiohttp_negotiate'],
     tests_require=['nose'],
     test_suite='nose.collector',
-    install_requires=['aiohttp', 'python-gssapi', 'www-authenticate'],
+    install_requires=['aiohttp', 'gssapi', 'www-authenticate'],
 )

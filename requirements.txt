@@ -1,4 +1,4 @@
 aiohttp
-python-gssapi
+gssapi
 www-authenticate
 
