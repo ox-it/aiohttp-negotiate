@@ -27,10 +27,8 @@ class NegotiateMixin(object):
                                            usage='initiate')
             else:
                 creds = None
-            print(str(service_name))
             self.negotiate_contexts[host] = gssapi.SecurityContext(name=service_name,
                                                                    creds=creds)
-        print(self.negotiate_contexts[host], creds)
         return self.negotiate_contexts[host]
 
     def negotiate_step(self, ctx, in_token=None):
@@ -46,8 +44,11 @@ class NegotiateMixin(object):
         host = urlparse(url).hostname
         headers = headers or {}
         resp = yield from super().request(method, url, headers=headers, **kwargs)
-        challenges = www_authenticate.parse(resp.headers.get('WWW-Authenticate'))
-        if resp.status == UNAUTHORIZED and 'Negotiate' in challenges:
+        challenges = {}
+        for k, v in resp.headers.items():
+            if k.lower() == 'www-authenticate':
+                challenges.update(www_authenticate.parse(v))
+        if resp.status == UNAUTHORIZED and 'negotiate' in challenges:
             host = urlparse(resp.url).hostname
             self.negotiate_contexts.pop(host, None)
             ctx = self.get_negotiate_context(host)
@@ -58,7 +59,7 @@ class NegotiateMixin(object):
                     headers['Authorization'] = 'Negotiate ' + out_token
                 resp = yield from super().request(method, url, headers=headers, **kwargs)
                 challenges = www_authenticate.parse(resp.headers.get('WWW-Authenticate'))
-                in_token = challenges['Negotiate']
+                in_token = challenges['negotiate']
                 self.negotiate_step(ctx, in_token)
                 if ctx.complete:
                     break
