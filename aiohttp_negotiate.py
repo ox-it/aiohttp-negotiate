@@ -40,7 +40,7 @@ class NegotiateMixin(object):
         return out_token
 
     @asyncio.coroutine
-    def request(self, method, url, headers=None, **kwargs):
+    def _request(self, method, url, *, headers=None, **kwargs):
         host = urlparse(url).hostname
         headers = headers or {}
         resp = yield from super().request(method, url, headers=headers, **kwargs)

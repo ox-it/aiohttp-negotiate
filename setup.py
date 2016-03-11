@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='aiohttp-negotiate',
-    version='0.9.2',
+    version='0.10.0',
     description='Mixin for Negotiate authentication for aiohttp',
     long_description=open('README.rst').read(),
     author='IT Services, University of Oxford',
