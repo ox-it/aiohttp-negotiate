@@ -57,7 +57,7 @@ class NegotiateMixin(object):
                 resp.close()
                 if out_token:
                     headers['Authorization'] = 'Negotiate ' + out_token
-                resp = yield from super().request(method, url, headers=headers, **kwargs)
+                resp = yield from super()._request(method, url, headers=headers, **kwargs)
                 challenges = www_authenticate.parse(resp.headers.get('WWW-Authenticate'))
                 in_token = challenges['negotiate']
                 self.negotiate_step(ctx, in_token)
