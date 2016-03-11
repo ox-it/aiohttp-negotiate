@@ -43,7 +43,7 @@ class NegotiateMixin(object):
     def _request(self, method, url, *, headers=None, **kwargs):
         host = urlparse(url).hostname
         headers = headers or {}
-        resp = yield from super().request(method, url, headers=headers, **kwargs)
+        resp = yield from super()._request(method, url, headers=headers, **kwargs)
         challenges = {}
         for k, v in resp.headers.items():
             if k.lower() == 'www-authenticate':
